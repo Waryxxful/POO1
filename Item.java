@@ -1,12 +1,14 @@
 public class Item {
-    protected int id;
-    protected int cantidad;
-    protected String nombre;
+    private int id;
+    private int cantidad;
+    private String nombre;
+    private String tipo;    
 
     public Item(int id, int cantidad, String nombre) {
         this.id = id;
         this.cantidad = cantidad;
         this.nombre = nombre;
+        this.tipo = tipo;
     }
 
     public void usar(Mascota mascota) {

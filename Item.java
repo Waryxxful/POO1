@@ -1,49 +1,52 @@
 public class Item {
     private int id;
-    private int cantidad;
     private String nombre;
-    private String tipo;    
+    private int cantidad;
 
-    public Item(int id, int cantidad, String nombre) {
+    public Item(int id, String nombre, int cantidad) {
         this.id = id;
-        this.cantidad = cantidad;
         this.nombre = nombre;
-        this.tipo = tipo;
+        this.cantidad = 0; //al principio no hay iteme
     }
 
-    public void usar(Mascota mascota) {
+    public int getId() {
+        return id;
     }
-}
 
-public class Comida extends Item {
-    public Comida(int id, int cantidad, String nombre) {
-        super(id, cantidad, nombre);
+    public String getNombre() {
+        return nombre;
+    }
+
+    public int getCantidad() {
+        return cantidad;
+    }
+
+    public void usar() {
+        if (cantidad > 0) {
+            cantidad--;
+        }
     }
 
     
-    public void usar(Mascota mascota) {
-        mascota.aumentarEnergia(20);
-        mascota.aumentarSalud(20);
+    public void setCantidad(int cantidad) {
+        this.cantidad = cantidad;
     }
 }
 
-
-public class Medicina extends Item {
-    public Medicina(int id, int cantidad, String nombre) {
-        super(id, cantidad, nombre);
-    }
-
-    public void usar(Mascota mascota) {
-        mascota.aumentarSalud(40);
+class Comida extends Item {
+    public Comida(int id, String nombre, int cantidad) {
+        super(id, nombre, cantidad);
     }
 }
 
-public class Juguete extends Item {
-    public Juguete(int id, int cantidad, String nombre) {
-        super(id, cantidad, nombre);
+class Medicina extends Item {
+    public Medicina(int id, String nombre, int cantidad) {
+        super(id, nombre, cantidad);
     }
+}
 
-    public void usar(Mascota mascota) {
-        mascota.aumentarFelicidad(30);
+class Juguete extends Item {
+    public Juguete(int id, String nombre, int cantidad) {
+        super(id, nombre, cantidad);
     }
 }

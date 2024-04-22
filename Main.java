@@ -1,104 +1,103 @@
-import java.util.Random;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Scanner;
 
-// Clase que representa la mascota virtual
-class MascotaVirtual {
-    private String nombre;
-    private int edad;
-    private int salud;
-    private int energia;
-    private int felicidad;
-    
-    // Constructor
-    public MascotaVirtual(String nombre) {
-        this.nombre = nombre;
-        this.edad = 0;
-        this.salud = 100; // Empezamos con salud máxima
-        this.energia = 100; // Empezamos con energía máxima
-        this.felicidad = 50; // Empezamos con felicidad neutra
-    }
-    
-       
-    // Método para verificar y ajustar los límites de los indicadores
-    private void verificarLimites() {
-        if (salud > 100) {
-            salud = 100;
-        }
-        if (salud < 0) {
-            salud = 0;
-        }
-        if (energia > 100) {
-            energia = 100;
-        }
-        if (energia < 0) {
-            energia = 0;
-        }
-        if (felicidad > 100) {
-            felicidad = 100;
-        }
-        if (felicidad < 0) {
-            felicidad = 0;
-        }
-        edad++; // Incrementar la edad después de cada acción
-        
-        // Condiciones adicionales
-        if (salud <= 10) {
-            felicidad -= 20;
-        }
-        if (salud <= 50 && edad > 5 && edad <= 10) {
-            felicidad -= 20;
-            energia -= 10;
-        }
-        if (salud <= 50 && edad > 10) {
-            felicidad -= 30;
-            energia -= 20;
-        }
-    }
-    
-    // Método para obtener el estado de ánimo de la mascota
-    public String obtenerEstadoDeAnimo() {
-        if (felicidad > 75) {
-            return "feliz";
-        } else if (felicidad > 50) {
-            return "contento";
-        } else if (felicidad > 25) {
-            return "triste";
-        } else {
-            return "muy triste";
-        }
-    }
-    
-    // Otros métodos para obtener atributos de la mascota
-    public String obtenerNombre() {
-        return nombre;
-    }
-    
-    public int obtenerEdad() {
-        return edad;
-    }
-    
-    public int obtenerSalud() {
-        return salud;
-    }
-    
-    public int obtenerEnergia() {
-        return energia;
-    }
-    
-    public int obtenerFelicidad() {
-        return felicidad;
-    }
-}
-
-// Clase principal que ejecuta el programa
 public class Main {
     public static void main(String[] args) {
-        MascotaVirtual mascota = new MascotaVirtual("Bobby");
+        if (args.length != 1) {
+            System.out.println("Uso: java Main <archivo config.csv>");
+            return;
+        }
+
+        String configFile = args[0];
+        Mascota mascota = null;
+        Inventario inventario = new Inventario();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(configFile))) {
+            String line = br.readLine(); // Nombre 
+            mascota = new Mascota(line);
+
+            while ((line = br.readLine()) != null) {
+                String[] partes = line.split(";");
+                int id = Integer.parseInt(partes[0]);
+                String tipo = partes[1];
+                String nombre = partes[2];
+                int cantidad = Integer.parseInt(partes[3]);
+
+                if (tipo.equals("Comida")) {
+                    inventario.agregarItem(new Comida(id, nombre, cantidad));
+                } else if (tipo.equals("Medicina")) {
+                    inventario.agregarItem(new Medicina(id, nombre, cantidad));
+                } else if (tipo.equals("Juguete")) {
+                    inventario.agregarItem(new Juguete(id, nombre, cantidad));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error al leer el archivo: " + e.getMessage());
+            return;
+        }
+
+        Scanner scanner = new Scanner(System.in);
+        float tiempoSimulado = 0.5f;
+
+        // Simular el tiempo 
+        mascota.incrementarEdad(tiempoSimulado);
+        mascota.reducirIndicadores(5);
+
+        while (true) {
+            System.out.printf("Tiempo simulado: %.1f%n", tiempoSimulado);
+            mascota.mostrarAtributos();
+            inventario.mostrarItems();
+            System.out.print("Seleccione un elemento del inventario, 'c' para dormir, o 'x' para salir: ");
+            
+            String opcion = scanner.nextLine().trim();
+            
+            if (opcion.equals("x")) {
+                System.out.println("Simulación terminada.");
+                break;
+            } else if (opcion.equals("c")) {
+                //aumententa paso del tiempo
+                tiempoSimulado += 0.5f;
+                mascota.incrementarEdad(0.5f);
+                mascota.reducirIndicadores(5);
+            } else {
+                try {
+                    int indice = Integer.parseInt(opcion);
+
+                    if (indice == 0) {
+                        System.out.println("La mascota duerme para recuperar energía.");
+                        mascota.setEnergia(mascota.getEnergia() + 10);
+                    } else {
+                        Item item = inventario.obtenerItem(indice);
+
+                        if (item != null) {
+                            item.usar();  // Disminuye la cantidad de items
+                            System.out.println("Usando " + item.getNombre());
+                            if (item instanceof Comida) {
+                                mascota.setSalud(mascota.getSalud() + 10);
+                            } else if (item instanceof Medicina) {
+                                mascota.setSalud(mascota.getSalud() + 15);
+                            } else if (item instanceof Juguete) {
+                                mascota.setFelicidad(mascota.getFelicidad() + 10);
+                            }
+                        } else {
+                            System.out.println("Índice inválido. Inténtelo nuevamente.");
+                        }
+                    }
+
+                } catch (NumberFormatException e) {
+                    System.out.println("Entrada inválida. Por favor, intente nuevamente.");
+                }
+            }
+
+            // confirma si la mascota se murio
+            if (mascota.getEstado() == Mascota.Estado.MUERTO) {
+                System.out.println("La mascota ha muerto. Fin del juego.");
+                break;
+            }
+        }
         
-        // Mostrar el estado de ánimo y los atributos de la mascota
-        System.out.println("La mascota está " + mascota.obtenerEstadoDeAnimo());
-        System.out.println("Edad: " + mascota.obtenerEdad());
-        System.out.println("Salud: " + mascota.obtenerSalud());
-        System.out.println("Energía: " + mascota.obtenerEnergia());
-        System.out.println("Felicidad: " + mascota.obtenerFelicidad());
+        scanner.close(); // 
     }
 }
